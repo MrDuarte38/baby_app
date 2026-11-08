@@ -1,0 +1,1527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#4f46e5" />
+  <title>Activity Tracker</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-dark: #4338ca;
+      --success: #059669;
+      --danger: #dc2626;
+      --warning: #d97706;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #1e293b;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --radius: 12px;
+      --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+    header {
+      background: linear-gradient(135deg, var(--primary), #7c3aed);
+      color: white;
+      padding: 12px 16px 14px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,.15);
+    }
+    header .top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    header h1 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .profile-select {
+      background: rgba(255,255,255,.2);
+      border: 1px solid rgba(255,255,255,.35);
+      color: white;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      max-width: 150px;
+      cursor: pointer;
+    }
+    .profile-select option { color: #1e293b; }
+    header .subtitle { font-size: 0.75rem; opacity: 0.9; margin-top: 4px; }
+    nav {
+      display: flex;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      position: sticky;
+      top: 70px;
+      z-index: 90;
+      -webkit-overflow-scrolling: touch;
+    }
+    nav button {
+      flex: 1;
+      min-width: 62px;
+      padding: 10px 6px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.7rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    nav button.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+      background: #eef2ff;
+    }
+    nav button span { display: block; font-size: 1.15rem; margin-bottom: 1px; }
+    main { padding: 16px; max-width: 640px; margin: 0 auto; }
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .card h2 {
+      font-size: 1.05rem;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .card h2 .actions { display: flex; gap: 6px; }
+    .quick-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .quick-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 14px 6px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      background: white;
+      cursor: pointer;
+      font-size: 0.78rem;
+      font-weight: 600;
+      transition: all 0.15s;
+      color: var(--text);
+      position: relative;
+    }
+    .quick-btn:active { transform: scale(0.96); }
+    .quick-btn:hover { border-color: var(--primary); background: #eef2ff; }
+    .quick-btn .icon { font-size: 1.5rem; }
+    .quick-btn .edit-hint {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      font-size: 0.65rem;
+      opacity: 0.4;
+    }
+    .form-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 12px;
+    }
+    .form-row label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 1rem;
+      background: white;
+      color: var(--text);
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79,70,229,.15);
+    }
+    textarea { resize: vertical; min-height: 60px; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-success { background: var(--success); color: white; }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-outline {
+      background: white;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-outline:hover { background: #f1f5f9; }
+    .btn-sm { padding: 5px 10px; font-size: 0.78rem; }
+    .btn-block { width: 100%; }
+    .event-list { list-style: none; }
+    .event-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .event-item:last-child { border-bottom: none; }
+    .event-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+      background: #f1f5f9;
+    }
+    .event-body { flex: 1; min-width: 0; }
+    .event-type { font-weight: 600; font-size: 0.95rem; }
+    .event-meta { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+    .event-notes { font-size: 0.85rem; margin-top: 4px; color: #334155; }
+    .event-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .filter-chip {
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: white;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--muted);
+    }
+    .filter-chip.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .summary-card {
+      background: #f1f5f9;
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+    .summary-card .num { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+    .summary-card .label { font-size: 0.75rem; color: var(--muted); }
+    .empty {
+      text-align: center;
+      padding: 28px 16px;
+      color: var(--muted);
+    }
+    .empty .big { font-size: 2.2rem; margin-bottom: 8px; }
+    .toast {
+      position: fixed;
+      bottom: 90px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1e293b;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      z-index: 200;
+      opacity: 0;
+      transition: opacity 0.25s;
+      pointer-events: none;
+      white-space: nowrap;
+      max-width: 90vw;
+    }
+    .toast.show { opacity: 1; }
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 300;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.2s;
+    }
+    .modal-overlay.open { opacity: 1; visibility: visible; }
+    .modal {
+      background: white;
+      border-radius: 16px 16px 0 0;
+      width: 100%;
+      max-width: 500px;
+      max-height: 92vh;
+      overflow-y: auto;
+      padding: 20px;
+      transform: translateY(100%);
+      transition: transform 0.25s ease;
+    }
+    .modal-overlay.open .modal { transform: translateY(0); }
+    .modal h3 { margin-bottom: 16px; font-size: 1.15rem; }
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .modal-actions .btn { flex: 1; }
+    .help-section { margin-bottom: 18px; }
+    .help-section h3 {
+      font-size: 1rem;
+      color: var(--primary);
+      margin-bottom: 6px;
+    }
+    .help-section p, .help-section li {
+      font-size: 0.9rem;
+      color: #334155;
+      margin-bottom: 5px;
+    }
+    .help-section ul { padding-left: 18px; }
+    .growth-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    .growth-table th, .growth-table td {
+      padding: 8px 6px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .growth-table th { color: var(--muted); font-weight: 600; }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      background: #f1f5f9;
+      color: #475569;
+    }
+    .reminder-item, .type-item, .profile-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .reminder-item:last-child, .type-item:last-child, .profile-item:last-child { border-bottom: none; }
+    .reminder-info, .type-info, .profile-info { flex: 1; min-width: 0; }
+    .reminder-title, .type-title, .profile-title { font-weight: 600; }
+    .reminder-when, .type-meta { font-size: 0.8rem; color: var(--muted); }
+    .notif-banner {
+      background: #fef3c7;
+      border: 1px solid #fbbf24;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 0.85rem;
+      margin-bottom: 12px;
+      display: none;
+    }
+    .notif-banner.show { display: block; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .icon-picker {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+      max-height: 180px;
+      overflow-y: auto;
+      padding: 4px 0;
+      -webkit-overflow-scrolling: touch;
+    }
+    .icon-picker button {
+      width: 42px;
+      height: 42px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      background: white;
+      font-size: 1.35rem;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .icon-picker button.selected {
+      border-color: var(--primary);
+      background: #eef2ff;
+    }
+    .icon-picker button:active {
+      transform: scale(0.92);
+    }
+    .manage-link {
+      font-size: 0.8rem;
+      color: var(--primary);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      padding: 0;
+    }
+    @media (max-width: 400px) {
+      .quick-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="top-row">
+      <h1 id="app-title">🍼 Baby Tracker</h1>
+      <select class="profile-select" id="profile-select" onchange="switchProfile(this.value)"></select>
+    </div>
+    <div class="subtitle" id="app-subtitle">Customizable activity log</div>
+  </header>
+
+  <nav id="nav">
+    <button class="active" data-tab="log"><span>📝</span>Log</button>
+    <button data-tab="history"><span>📜</span>History</button>
+    <button data-tab="reminders"><span>⏰</span>Remind</button>
+    <button data-tab="growth" id="nav-growth"><span>📏</span>Growth</button>
+    <button data-tab="setup"><span>⚙️</span>Setup</button>
+    <button data-tab="backup"><span>💾</span>Backup</button>
+    <button data-tab="help"><span>❓</span>Help</button>
+  </nav>
+
+  <main>
+    <!-- LOG TAB -->
+    <section id="tab-log" class="tab">
+      <div class="card">
+        <h2>
+          Quick Log
+          <button class="manage-link" onclick="showTab('setup')">Customize ▸</button>
+        </h2>
+        <div class="quick-grid" id="quick-btns"></div>
+      </div>
+
+      <div class="card">
+        <h2>Today at a glance</h2>
+        <div class="summary-grid" id="today-summary"></div>
+      </div>
+
+      <div class="card">
+        <h2>Recent entries</h2>
+        <ul class="event-list" id="recent-list"></ul>
+      </div>
+    </section>
+
+    <!-- HISTORY TAB -->
+    <section id="tab-history" class="tab" style="display:none">
+      <div class="card">
+        <h2>Filter by date</h2>
+        <div class="two-col" style="margin-bottom:12px">
+          <div class="form-row" style="margin-bottom:0">
+            <label>From</label>
+            <input type="date" id="history-from" onchange="renderHistory()" />
+          </div>
+          <div class="form-row" style="margin-bottom:0">
+            <label>To</label>
+            <input type="date" id="history-to" onchange="renderHistory()" />
+          </div>
+        </div>
+        <button class="btn btn-sm btn-outline" style="margin-bottom:12px" onclick="clearHistoryDates()">Clear dates</button>
+        <h2>Filter by type</h2>
+        <div class="filter-bar" id="filter-bar"></div>
+        <div id="history-count" style="font-size:0.85rem;color:var(--muted);margin-bottom:8px"></div>
+        <ul class="event-list" id="history-list"></ul>
+      </div>
+    </section>
+
+    <!-- REMINDERS TAB -->
+    <section id="tab-reminders" class="tab" style="display:none">
+      <div class="notif-banner" id="notif-banner">
+        Notifications are off. Enable them so reminders can alert you (keep this tab open).
+        <button class="btn btn-sm btn-primary" style="margin-top:8px" onclick="requestNotifPermission()">Enable notifications</button>
+      </div>
+      <div class="card">
+        <h2>Add reminder</h2>
+        <div class="form-row">
+          <label>Title</label>
+          <input type="text" id="rem-title" placeholder="e.g. Doctor checkup, Oil change, Filter clean" />
+        </div>
+        <div class="form-row">
+          <label>When</label>
+          <select id="rem-interval">
+            <option value="1d">In 1 day</option>
+            <option value="2w">In 2 weeks</option>
+            <option value="1m">In 1 month (calendar)</option>
+            <option value="6w">In 6 weeks (42 days)</option>
+            <option value="3m">In 3 months (calendar)</option>
+            <option value="1y">In 1 year (calendar)</option>
+            <option value="custom">Custom…</option>
+          </select>
+        </div>
+        <div class="form-row" id="custom-interval-row" style="display:none">
+          <label>Custom amount</label>
+          <div class="two-col">
+            <input type="number" id="rem-custom-num" min="1" value="7" />
+            <select id="rem-custom-unit">
+              <option value="d">Days</option>
+              <option value="w">Weeks</option>
+              <option value="m">Months</option>
+              <option value="y">Years</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Notes (optional)</label>
+          <input type="text" id="rem-notes" placeholder="Extra details" />
+        </div>
+        <button class="btn btn-primary btn-block" onclick="addReminder()">Add reminder</button>
+      </div>
+      <div class="card">
+        <h2>Upcoming reminders</h2>
+        <div id="reminder-list"></div>
+      </div>
+    </section>
+
+    <!-- GROWTH TAB (Baby only) -->
+    <section id="tab-growth" class="tab" style="display:none">
+      <div class="card">
+        <h2>Add measurement</h2>
+        <div class="form-row">
+          <label>Date & time</label>
+          <input type="datetime-local" id="growth-dt" />
+        </div>
+        <div class="two-col">
+          <div class="form-row">
+            <label>Weight (kg)</label>
+            <input type="number" id="growth-weight" step="0.01" min="0" placeholder="e.g. 4.25" />
+          </div>
+          <div class="form-row">
+            <label>Height / length (cm)</label>
+            <input type="number" id="growth-height" step="0.1" min="0" placeholder="e.g. 55.0" />
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Head circumference (cm)</label>
+          <input type="number" id="growth-head" step="0.1" min="0" placeholder="e.g. 37.5" />
+        </div>
+        <div class="form-row">
+          <label>Notes</label>
+          <input type="text" id="growth-notes" placeholder="Optional" />
+        </div>
+        <button class="btn btn-primary btn-block" onclick="addGrowth()">Save measurement</button>
+      </div>
+      <div class="card">
+        <h2>Growth history</h2>
+        <div id="growth-list"></div>
+      </div>
+    </section>
+
+    <!-- SETUP TAB (profiles + custom types) -->
+    <section id="tab-setup" class="tab" style="display:none">
+      <div class="card">
+        <h2>Current profile</h2>
+        <p style="font-size:0.9rem;color:var(--muted);margin-bottom:12px">
+          Switch profiles with the dropdown in the header. Each profile has its own quick-log buttons and history.
+        </p>
+        <div id="profile-list"></div>
+        <button class="btn btn-outline btn-block" style="margin-top:12px" onclick="openProfileModal()">+ New profile</button>
+      </div>
+
+      <div class="card">
+        <h2>
+          Quick-log buttons
+          <button class="btn btn-sm btn-primary" onclick="openTypeModal()">+ Add</button>
+        </h2>
+        <p style="font-size:0.85rem;color:var(--muted);margin-bottom:10px">
+          These appear on the Log tab for the current profile. Remove ones you don’t need or create your own.
+        </p>
+        <div id="type-list"></div>
+      </div>
+    </section>
+
+    <!-- BACKUP TAB -->
+    <section id="tab-backup" class="tab" style="display:none">
+      <div class="card">
+        <h2>Export / Import</h2>
+        <p style="font-size:0.9rem;color:var(--muted);margin-bottom:12px">
+          Data is stored only in this browser on this device. Export regularly so you don’t lose records.
+        </p>
+        <button class="btn btn-success btn-block" style="margin-bottom:10px" onclick="exportData()">⬇ Export JSON backup</button>
+        <button class="btn btn-outline btn-block" onclick="document.getElementById('import-file').click()">⬆ Import JSON backup</button>
+        <input type="file" id="import-file" accept=".json,application/json" style="display:none" onchange="importData(event)" />
+      </div>
+      <div class="card">
+        <h2>Danger zone</h2>
+        <button class="btn btn-danger btn-block" onclick="clearAllData()">Delete all data</button>
+      </div>
+    </section>
+
+    <!-- HELP TAB -->
+    <section id="tab-help" class="tab" style="display:none">
+      <div class="card">
+        <div class="help-section">
+          <h3>🔄 Multiple profiles</h3>
+          <p>Use the dropdown in the header to switch between contexts such as <strong>Baby</strong>, <strong>Automotive</strong>, <strong>Pool Cleaning</strong>, or any custom profile you create.</p>
+          <p>Each profile keeps its own quick-log buttons and event history.</p>
+        </div>
+        <div class="help-section">
+          <h3>⚙️ Customize quick buttons</h3>
+          <p>Go to the <strong>Setup</strong> tab to:</p>
+          <ul>
+            <li>Add new buttons (name + emoji icon)</li>
+            <li>Delete buttons you don’t need</li>
+            <li>Create entirely new profiles</li>
+          </ul>
+        </div>
+        <div class="help-section">
+          <h3>📝 Logging</h3>
+          <p>Tap a quick button → optionally adjust time and add notes → Save. Everything is timestamped and stored locally.</p>
+        </div>
+        <div class="help-section">
+          <h3>⏰ Reminders</h3>
+          <p>Create future reminders with fixed or custom intervals. Calendar months are true calendar months; 6 weeks = 42 days.</p>
+          <p>Browser notifications only work while this page stays open (or in a background tab).</p>
+        </div>
+        <div class="help-section">
+          <h3>📏 Growth (Baby profile)</h3>
+          <p>The Growth tab appears only when the Baby profile is selected. Track weight, length and head circumference.</p>
+        </div>
+        <div class="help-section">
+          <h3>💾 Backup</h3>
+          <p>Export a JSON file regularly. You can re-import it on the same or another device that opens this HTML file.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- Log / Edit Event Modal -->
+  <div class="modal-overlay" id="modal-event">
+    <div class="modal">
+      <h3 id="modal-event-title">Log event</h3>
+      <div class="form-row">
+        <label>Type</label>
+        <select id="modal-event-type"></select>
+      </div>
+      <div class="form-row">
+        <label>Date & time</label>
+        <input type="datetime-local" id="modal-dt" />
+      </div>
+      <div class="form-row">
+        <label>Notes</label>
+        <textarea id="modal-notes" placeholder="Any extra details…"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeModal('event')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveEvent()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add / Edit Type Modal -->
+  <div class="modal-overlay" id="modal-type">
+    <div class="modal">
+      <h3 id="modal-type-title">Add quick button</h3>
+      <div class="form-row">
+        <label>Name</label>
+        <input type="text" id="type-name" placeholder="e.g. Oil change, Skimmed, Fed" maxlength="24" />
+      </div>
+      <div class="form-row">
+        <label>Icon category</label>
+        <select id="icon-category" onchange="buildIconPicker(document.getElementById('type-icon').value)"></select>
+      </div>
+      <div class="form-row">
+        <label>Icon (tap to select, or type any emoji)</label>
+        <input type="text" id="type-icon" placeholder="🔧" maxlength="8" style="font-size:1.4rem" />
+        <div class="icon-picker" id="icon-picker"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeModal('type')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveType()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Profile Modal -->
+  <div class="modal-overlay" id="modal-profile">
+    <div class="modal">
+      <h3>New profile</h3>
+      <div class="form-row">
+        <label>Name</label>
+        <input type="text" id="profile-name" placeholder="e.g. Garden, Pets, Home" maxlength="24" />
+      </div>
+      <div class="form-row">
+        <label>Icon (emoji)</label>
+        <input type="text" id="profile-icon" placeholder="🌱" maxlength="4" style="font-size:1.4rem" />
+      </div>
+      <div class="form-row">
+        <label>
+          <input type="checkbox" id="profile-growth" /> Show Growth tab (for baby / child tracking)
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeModal('profile')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveProfile()">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ---------- Defaults ----------
+    const DEFAULT_PROFILES = [
+      {
+        id: 'baby',
+        name: 'Baby',
+        icon: '🍼',
+        showGrowth: true,
+        types: [
+          { id: 'ate', label: 'Ate', icon: '🍼' },
+          { id: 'pooped', label: 'Pooped', icon: '💩' },
+          { id: 'peed', label: 'Peed', icon: '💧' },
+          { id: 'wetdirty', label: 'Wet & Dirty', icon: '🧷' },
+          { id: 'sleep', label: 'Sleep', icon: '😴' },
+          { id: 'medicine', label: 'Medicine', icon: '💊' },
+          { id: 'other', label: 'Other', icon: '📌' }
+        ]
+      },
+      {
+        id: 'auto',
+        name: 'Automotive',
+        icon: '🚗',
+        showGrowth: false,
+        types: [
+          { id: 'fuel', label: 'Fuel', icon: '⛽' },
+          { id: 'oil', label: 'Oil change', icon: '🛢️' },
+          { id: 'service', label: 'Service', icon: '🔧' },
+          { id: 'wash', label: 'Wash', icon: '🧼' },
+          { id: 'tire', label: 'Tires', icon: '🛞' },
+          { id: 'other', label: 'Other', icon: '📌' }
+        ]
+      },
+      {
+        id: 'pool',
+        name: 'Pool Cleaning',
+        icon: '🏊',
+        showGrowth: false,
+        types: [
+          { id: 'skim', label: 'Skimmed', icon: '🧹' },
+          { id: 'vacuum', label: 'Vacuumed', icon: '🌀' },
+          { id: 'chemicals', label: 'Chemicals', icon: '🧪' },
+          { id: 'filter', label: 'Filter clean', icon: '🔩' },
+          { id: 'backwash', label: 'Backwash', icon: '💧' },
+          { id: 'other', label: 'Other', icon: '📌' }
+        ]
+      }
+    ];
+
+    const ICON_CATEGORIES = {
+      'Baby & Kids': ['🍼','👶','🧒','👦','👧',' parity','🧷','💩','💧','😴','💊','🧸','🎠','🎢','🛝','🎈','🎁','📚','✏️','🖍️','🧩','🪀','🪁','🎭','🎪'],
+      'Automotive': ['🚗','🚕','🚙','🚌','🚎','🏎️','🚓','🚑','🚒','🚐','🛻','🚚','🚛','🚜','🛵','🏍️','🚲','🛴','⛽','🛢️','🔧','🛠️','⚙️','🛞','🧼','🔑','🅿️','🛑','🚦'],
+      'Home & Household': ['🏠','🏡','🏢','🛋️','🛏️','🚪','🪟','🪞','🚿','🛁','🚽','🧻','🧺','🧹','🧽','🧴','💡','🔌','🔦','🕯️','📦','📫','🔑','🗝️','🖼️','🪴','🕰️'],
+      'Cleaning & Chores': ['🧹','🧼','🧽','🧴','🧺','🪣','🪥','🪒','🧻','💧','✨','🌟','💨','🌀','🧯','🗑️','♻️','🧺'],
+      'Pool & Outdoor': ['🏊','🏊‍♂️','🏊‍♀️','🧜','🏄','🌊','💧','🧹','🌀','🧪','🔩','🚿','☀️','🌴','🏖️','⛱️','🕶️','🧴'],
+      'Garden & Nature': ['🌱','🌿','🍀','🌳','🌲','🌴','🌵','🌾','🌷','🌹','🌻','🌼','🌸','🌺','🍃','🍂','🍁','🪨','🪵','🪴','🌻','🐝','🦋','🐛','🪱'],
+      'Pets & Animals': ['🐕','🐶','🐈','🐱','🐇','🐰','🐹','🐭','🐀','🐿️','🦔','🦇','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🦄','🐴','🦓','🦌','🐓','🐣','🐦','🐧','🦆','🦅','🦉','🦇','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦐','🦞','🦀','🐡','🐠','🐟','🐬','🐳','🐋','🦈','🐊'],
+      'Food & Cooking': ['🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🍆','🥑','🥦','🥬','🥒','🌶️','🫑','🌽','🥕','🫒','🧄','🧅','🥔','🍠','🥐','🥯','🍞','🥖','🥨','🧀','🥚','🍳','🧈','🥞','🧇','🥓','🥩','🍗','🍖','🦴','🌭','🍔','🍟','🍕','🫓','🥪','🥙','🧆','🌮','🌯','🫔','🥗','🥘','🫕','🥫','🍝','🍜','🍲','🍛','🍣','🍱','🥟','🦪','🍤','🍙','🍚','🍘','🍥','🥠','🥮','🍢','🍡','🍧','🍨','🍦','🥧','🧁','🍰','🎂','🍮','🍭','🍬','🍫','🍿','🍩','🍪','🌰','🥜','🍯','🥛','🍼','☕','🍵','🧃','🥤','🧋','🍶','🍺','🍻','🥂','🍷','🥃','🍸','🍹','🧉','🍾','🧊'],
+      'Health & Fitness': ['💪','🏋️','🤸','🧘','🏃','🚶','🚴','🏊','⚽','🏀','🏈','⚾','🎾','🏐','🏉','🥏','🎱','🏓','🏸','🏒','🏑','🥍','🏏','🪃','🥅','⛳','🏹','🎣','🤿','🥊','🥋','🛹','🛼','⛸️','🎿','⛷️','🏂','🪂','💊','💉','🩹','🩺','🫀','🫁','🧠','🦷','🦴','👀','👁️','👅','👄','🩸','🌡️','🏨','⚕️'],
+      'Work & Study': ['💼','📁','📂','🗂️','📅','📆','🗓️','📇','📈','📉','📊','📋','📌','📍','📎','🖇️','📏','📐','✂️','🗃️','🗄️','🗑️','🔒','🔓','🔏','🔐','🔑','🗝️','🔨','🪓','⛏️','🛠️','⚒️','🗡️','⚔️','🔫','🪃','🏹','🛡️','🔧','🔩','⚙️','🗜️','⚖️','🦯','🔗','⛓️','🧰','🧲','🪜','⚗️','🔬','🔭','📡','💉','💊','🩹','🩺','🖥️','💻','⌨️','🖱️','🖨️','📱','☎️','📞','📟','📠','📺','📻','🎙️','🎚️','🎛️','🧭','⏱️','⏲️','⏰','🕰️','⌛','⏳','📡','🔋','🔌','💡','🔦','🕯️','🪔','🧯','🛢️','💸','💵','💴','💶','💷','🪙','💰','💳','💎','⚖️','🪜','🧰','🧲','🔫','💣','🧨','🪓','🔪','🗡️','⚔️','🛡️','🚬','⚰️','🪦','⚱️','🏺','🔮','📿','🧿','💈','⚗️','🔭','🔬','🕳️','🩹','🩺','💊','💉','🩸','🧬','🦠','🧫','🧪','🌡️','🧹','🧺','🧻','🚽','🚰','🚿','🛁','🛀','🧴','🧷','🧹','🧺','🧻','🚽','🚰','🚿','🛁','🛀','🧴','🧷'],
+      'Travel & Transport': ['✈️','🛫','🛬','🛩️','💺','🚀','🛸','🚁','🛶','⛵','🚤','🛥️','🛳️','⛴️','🚢','⚓','🚧','🚦','🚥','🗺️','🗿','🗽','🗼','🏰','🏯','🏟️','🎡','🎢','🎠','⛲','⛱️','🏖️','🏝️','🏜️','🌋','⛰️','🏔️','🗻','🏕️','⛺','🛖','🏠','🏡','🏘️','🏚️','🏗️','🏭','🏢','🏬','🏣','🏤','🏥','🏦','🏨','🏪','🏫','🏩','💒','🏛️','⛪','🕌','🛕','🕍','🕋','⛩️','🛤️','🛣️','🗾','🎑','🏞️','🌅','🌄','🌠','🎇','🎆','🌇','🌆','🏙️','🌃','🌌','🌉','🌁'],
+      'Sports & Games': ['⚽','🏀','🏈','⚾','🥎','🎾','🏐','🏉','🥏','🎱','🪀','🏓','🏸','🏒','🏑','🥍','🏏','🪃','🥅','⛳','🏹','🎣','🤿','🥊','🥋','🎽','🛹','🛼','⛸️','🥌','🎿','⛷️','🏂','🪂','🏋️','🤼','🤸','⛹️','🤺','🤾','🏌️','🏇','🧘','🏄','🏊','🤽','🚣','🧗','🚵','🚴','🏆','🥇','🥈','🥉','🏅','🎖️','🏵️','🎗️','🎫','🎟️','🎪','🤹','🎭','🩰','🎨','🎬','🎤','🎧','🎼','🎹','🥁','🪘','🎷','🎺','🪗','🎸','🪕','🎻','🎲','♟️','🎯','🎳','🎮','🕹️','🎰','🧩'],
+      'Weather & Time': ['☀️','🌤️','⛅','🌥️','☁️','🌦️','🌧️','⛈️','🌩️','⚡','❄️','☃️','⛄','🌨️','🌬️','💨','🌪️','🌫️','🌈','☔','💧','💦','🌊','🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘','🌙','🌚','🌛','🌜','🌡️','🔥','💥','⭐','🌟','✨','⚡','☄️','💫','🕐','🕑','🕒','🕓','🕔','🕕','🕖','🕗','🕘','🕙','🕚','🕛','🕜','🕝','🕞','🕟','🕠','🕡','🕢','🕣','🕤','🕥','🕦','🕧','⏰','⏱️','⏲️','⌛','⏳'],
+      'Symbols & General': ['✅','❌','⭕','❗','❓','❕','❔','‼️','⁉️','💯','🔢','#️⃣','*️⃣','0️⃣','1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟','🔠','🔡','🔢','🔣','🔤','🅰️','🆎','🅱️','🆑','🆒','🆓','ℹ️','🆔','Ⓜ️','🆕','🆖','🅾️','🆗','🅿️','🆘','🆙','🆚','🈁','🈂️','🈷️','🈶','🈯','🉐','🈹','🈚','🈲','🉑','🈸','🈴','🈳','㊗️','㊙️','🈺','🈵','🔴','🟠','🟡','🟢','🔵','🟣','🟤','⚫','⚪','🟥','🟧','🟨','🟩','🟦','🟪','🟫','⬛','⬜','◼️','◻️','◾','◽','▪️','▫️','🔶','🔷','🔸','🔹','🔺','🔻','💠','🔘','🔳','🔲','▪️','▫️','◾','◽','◼️','◻️','⬛','⬜','🟥','🟧','🟨','🟩','🟦','🟪','🟫','🔔','🔕','🔊','🔉','🔈','🔇','📢','📣','📯','🔔','🔕','🎵','🎶','💹','💱','💲','⚕️','♻️','⚜️','🔱','📛','🔰','⭕','✅','☑️','✔️','❌','❎','➰','➿','〽️','✳️','✴️','❇️','©️','®️','™️','＃','＊','▶️','⏸','⏯','⏹','⏺','⏭','⏮','⏩','⏪','⏫','⏬','◀️','🔼','🔽','➡️','⬅️','⬆️','⬇️','↗️','↘️','↙️','↖️','↕️','↔️','↩️','↪️','⤴️','⤵️','🔀','🔁','🔂','🔄','🔃','🎵','🎶','➕','➖','➗','✖️','♾️','‼️','⁉️','❓','❔','❕','❗','〰️','💱','💲','⚕️','♻️','⚜️','🔱','📛','🔰','⭕','✅','☑️','✔️','❌','❎','➰','➿','〽️','✳️','✴️','❇️','©️','®️','™️','＃','＊','📌','📍','📎','🖇️','📏','📐','✂️','🗑️','🔒','🔓','🔏','🔐','🔑','🗝️','🔨','🪓','⛏️','⚒️','🛠️','🗡️','⚔️','🔫','🪃','🏹','🛡️','🔧','🔩','⚙️','🗜️','⚖️','🦯','🔗','⛓️','🧰','🧲','🪜','⚗️','🔬','🔭','📡','💉','💊','🩹','🩺']
+    };
+
+    const STORAGE_KEY = 'activityTracker_v2';
+
+    let state = {
+      profiles: [],
+      currentProfileId: 'baby',
+      events: [],
+      reminders: [],
+      growth: []
+    };
+
+    let currentFilter = 'all';
+    let editingEventId = null;
+    let editingTypeId = null;
+
+    // ---------- Persistence ----------
+    function load() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          state = { ...state, ...parsed };
+        }
+      } catch (e) { console.warn(e); }
+
+      // Ensure defaults exist
+      if (!state.profiles || !state.profiles.length) {
+        state.profiles = JSON.parse(JSON.stringify(DEFAULT_PROFILES));
+      }
+      if (!state.currentProfileId) state.currentProfileId = state.profiles[0].id;
+      if (!state.events) state.events = [];
+      if (!state.reminders) state.reminders = [];
+      if (!state.growth) state.growth = [];
+    }
+
+    function save() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function uid() {
+      return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    }
+
+    function nowLocalISO() {
+      const d = new Date();
+      d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+      return d.toISOString().slice(0, 16);
+    }
+
+    function currentProfile() {
+      return state.profiles.find(p => p.id === state.currentProfileId) || state.profiles[0];
+    }
+
+    function profileEvents() {
+      return state.events
+        .filter(e => e.profileId === state.currentProfileId)
+        .sort((a, b) => new Date(b.dt) - new Date(a.dt));
+    }
+
+    // ---------- UI helpers ----------
+    function toast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 2200);
+    }
+
+    function formatDT(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      return d.toLocaleString(undefined, {
+        weekday: 'short', month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+    }
+
+    function isToday(iso) {
+      const d = new Date(iso);
+      const now = new Date();
+      return d.getFullYear() === now.getFullYear() &&
+             d.getMonth() === now.getMonth() &&
+             d.getDate() === now.getDate();
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function showTab(tabId) {
+      document.querySelectorAll('nav button').forEach(b => {
+        b.classList.toggle('active', b.dataset.tab === tabId);
+      });
+      document.querySelectorAll('.tab').forEach(t => t.style.display = 'none');
+      document.getElementById('tab-' + tabId).style.display = 'block';
+      if (tabId === 'history') renderHistory();
+      if (tabId === 'reminders') { renderReminders(); updateNotifBanner(); }
+      if (tabId === 'growth') renderGrowth();
+      if (tabId === 'setup') { renderProfiles(); renderTypes(); }
+    }
+
+    // ---------- Navigation ----------
+    document.getElementById('nav').addEventListener('click', e => {
+      const btn = e.target.closest('button[data-tab]');
+      if (!btn) return;
+      showTab(btn.dataset.tab);
+    });
+
+    // ---------- Profile switching ----------
+    function renderProfileSelect() {
+      const sel = document.getElementById('profile-select');
+      sel.innerHTML = state.profiles.map(p =>
+        `<option value="${p.id}" ${p.id === state.currentProfileId ? 'selected' : ''}>${p.icon} ${p.name}</option>`
+      ).join('');
+    }
+
+    function switchProfile(id) {
+      state.currentProfileId = id;
+      save();
+      applyProfileUI();
+      renderAll();
+      toast('Switched to ' + currentProfile().name);
+    }
+
+    function applyProfileUI() {
+      const p = currentProfile();
+      document.getElementById('app-title').textContent = `${p.icon} ${p.name} Tracker`;
+      document.title = `${p.name} Tracker`;
+      document.getElementById('nav-growth').style.display = p.showGrowth ? '' : 'none';
+      // If currently on growth tab but profile doesn't support it, go to log
+      if (!p.showGrowth && document.getElementById('tab-growth').style.display !== 'none') {
+        showTab('log');
+      }
+      renderProfileSelect();
+    }
+
+    // ---------- Quick buttons ----------
+    function buildQuickButtons() {
+      const p = currentProfile();
+      const container = document.getElementById('quick-btns');
+      if (!p.types.length) {
+        container.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="big">➕</div>No buttons yet.<br><button class="btn btn-sm btn-primary" onclick="showTab('setup')">Add some in Setup</button></div>`;
+        return;
+      }
+      container.innerHTML = p.types.map(t => `
+        <button class="quick-btn" onclick="quickLog('${t.id}')">
+          <span class="icon">${t.icon}</span>${escapeHtml(t.label)}
+        </button>
+      `).join('');
+    }
+
+    function quickLog(typeId) {
+      openEventModal(typeId);
+    }
+
+    // ---------- Event modal ----------
+    function openEventModal(typeId, event = null) {
+      editingEventId = event ? event.id : null;
+      const p = currentProfile();
+      document.getElementById('modal-event-title').textContent = event ? 'Edit entry' : 'Log event';
+
+      const sel = document.getElementById('modal-event-type');
+      sel.innerHTML = p.types.map(t =>
+        `<option value="${t.id}" ${(event ? event.typeId : typeId) === t.id ? 'selected' : ''}>${t.icon} ${t.label}</option>`
+      ).join('');
+
+      document.getElementById('modal-dt').value = event ? event.dt.slice(0, 16) : nowLocalISO();
+      document.getElementById('modal-notes').value = event ? (event.notes || '') : '';
+      document.getElementById('modal-event').classList.add('open');
+    }
+
+    function closeModal(which) {
+      document.getElementById('modal-' + which).classList.remove('open');
+      if (which === 'event') editingEventId = null;
+      if (which === 'type') editingTypeId = null;
+    }
+
+    function saveEvent() {
+      const typeId = document.getElementById('modal-event-type').value;
+      const dt = document.getElementById('modal-dt').value;
+      if (!dt) { toast('Please set a date & time'); return; }
+      const notes = document.getElementById('modal-notes').value.trim();
+
+      const entry = {
+        id: editingEventId || uid(),
+        profileId: state.currentProfileId,
+        typeId,
+        dt: new Date(dt).toISOString(),
+        notes
+      };
+
+      if (editingEventId) {
+        const idx = state.events.findIndex(e => e.id === editingEventId);
+        if (idx >= 0) state.events[idx] = entry;
+      } else {
+        state.events.push(entry);
+      }
+      save();
+      closeModal('event');
+      renderRecent();
+      renderTodaySummary();
+      toast(editingEventId ? 'Entry updated' : 'Logged!');
+    }
+
+    function editEvent(id) {
+      const event = state.events.find(e => e.id === id);
+      if (event) openEventModal(event.typeId, event);
+    }
+
+    function deleteEvent(id) {
+      if (!confirm('Delete this entry?')) return;
+      state.events = state.events.filter(e => e.id !== id);
+      save();
+      renderRecent();
+      renderHistory();
+      renderTodaySummary();
+      toast('Deleted');
+    }
+
+    // ---------- Today summary ----------
+    function renderTodaySummary() {
+      const today = profileEvents().filter(e => isToday(e.dt));
+      const p = currentProfile();
+      // Show counts for up to 4 most-used types today, or first 4 types
+      const counts = {};
+      today.forEach(e => { counts[e.typeId] = (counts[e.typeId] || 0) + 1; });
+      const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]);
+      let display = sorted.slice(0, 4);
+      if (display.length < 2) {
+        // fallback: show first few types with 0
+        display = p.types.slice(0, 4).map(t => [t.id, counts[t.id] || 0]);
+      }
+      document.getElementById('today-summary').innerHTML = display.map(([tid, num]) => {
+        const t = p.types.find(x => x.id === tid) || { label: tid, icon: '📌' };
+        return `<div class="summary-card"><div class="num">${num}</div><div class="label">${t.icon} ${escapeHtml(t.label)}</div></div>`;
+      }).join('') || '<div class="empty" style="grid-column:1/-1">No activity today</div>';
+    }
+
+    // ---------- Event list rendering ----------
+    function typeMeta(typeId) {
+      const p = currentProfile();
+      return p.types.find(t => t.id === typeId) || { label: typeId, icon: '📌' };
+    }
+
+    function renderEventItem(e) {
+      const m = typeMeta(e.typeId);
+      return `
+        <li class="event-item">
+          <div class="event-icon">${m.icon}</div>
+          <div class="event-body">
+            <div class="event-type">${escapeHtml(m.label)}</div>
+            <div class="event-meta">${formatDT(e.dt)}</div>
+            ${e.notes ? `<div class="event-notes">${escapeHtml(e.notes)}</div>` : ''}
+          </div>
+          <div class="event-actions">
+            <button class="btn btn-sm btn-outline" onclick="editEvent('${e.id}')">Edit</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteEvent('${e.id}')">✕</button>
+          </div>
+        </li>`;
+    }
+
+    function renderRecent() {
+      const list = profileEvents().slice(0, 20);
+      const el = document.getElementById('recent-list');
+      if (!list.length) {
+        el.innerHTML = `<div class="empty"><div class="big">📝</div>No entries yet.<br>Tap a quick button above to start.</div>`;
+        return;
+      }
+      el.innerHTML = list.map(renderEventItem).join('');
+    }
+
+    // ---------- History ----------
+    function clearHistoryDates() {
+      document.getElementById('history-from').value = '';
+      document.getElementById('history-to').value = '';
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const p = currentProfile();
+      const bar = document.getElementById('filter-bar');
+      const types = [{ id: 'all', label: 'All', icon: '' }, ...p.types];
+      bar.innerHTML = types.map(t =>
+        `<button class="filter-chip ${currentFilter === t.id ? 'active' : ''}" data-f="${t.id}">${t.icon || ''} ${escapeHtml(t.label)}</button>`
+      ).join('');
+      bar.querySelectorAll('.filter-chip').forEach(chip => {
+        chip.onclick = () => {
+          currentFilter = chip.dataset.f;
+          renderHistory();
+        };
+      });
+
+      let list = profileEvents();
+
+      // Type filter
+      if (currentFilter !== 'all') {
+        list = list.filter(e => e.typeId === currentFilter);
+      }
+
+      // Date range filter
+      const fromVal = document.getElementById('history-from').value;
+      const toVal = document.getElementById('history-to').value;
+      if (fromVal) {
+        const from = new Date(fromVal + 'T00:00:00');
+        list = list.filter(e => new Date(e.dt) >= from);
+      }
+      if (toVal) {
+        const to = new Date(toVal + 'T23:59:59.999');
+        list = list.filter(e => new Date(e.dt) <= to);
+      }
+
+      const countEl = document.getElementById('history-count');
+      if (countEl) {
+        const parts = [];
+        if (fromVal || toVal) {
+          parts.push((fromVal || '…') + ' → ' + (toVal || '…'));
+        }
+        countEl.textContent = list.length + ' entr' + (list.length === 1 ? 'y' : 'ies')
+          + (parts.length ? ' · ' + parts.join('') : '');
+      }
+
+      const el = document.getElementById('history-list');
+      if (!list.length) {
+        el.innerHTML = `<div class="empty"><div class="big">📜</div>No matching entries.</div>`;
+        return;
+      }
+      el.innerHTML = list.map(renderEventItem).join('');
+    }
+
+    // ---------- Reminders (shared across profiles) ----------
+    document.getElementById('rem-interval').addEventListener('change', e => {
+      document.getElementById('custom-interval-row').style.display =
+        e.target.value === 'custom' ? 'block' : 'none';
+    });
+
+    function addMonths(date, months) {
+      const d = new Date(date);
+      const day = d.getDate();
+      d.setMonth(d.getMonth() + months);
+      if (d.getDate() < day) d.setDate(0);
+      return d;
+    }
+
+    function computeReminderDate(interval) {
+      const now = new Date();
+      if (interval === '1d') return new Date(now.getTime() + 86400000);
+      if (interval === '2w') return new Date(now.getTime() + 14 * 86400000);
+      if (interval === '6w') return new Date(now.getTime() + 42 * 86400000);
+      if (interval === '1m') return addMonths(now, 1);
+      if (interval === '3m') return addMonths(now, 3);
+      if (interval === '1y') return addMonths(now, 12);
+      if (interval === 'custom') {
+        const num = parseInt(document.getElementById('rem-custom-num').value, 10) || 1;
+        const unit = document.getElementById('rem-custom-unit').value;
+        if (unit === 'd') return new Date(now.getTime() + num * 86400000);
+        if (unit === 'w') return new Date(now.getTime() + num * 7 * 86400000);
+        if (unit === 'm') return addMonths(now, num);
+        if (unit === 'y') return addMonths(now, num * 12);
+      }
+      return new Date(now.getTime() + 86400000);
+    }
+
+    function addReminder() {
+      const title = document.getElementById('rem-title').value.trim();
+      if (!title) { toast('Please enter a title'); return; }
+      const interval = document.getElementById('rem-interval').value;
+      const when = computeReminderDate(interval);
+      const notes = document.getElementById('rem-notes').value.trim();
+      state.reminders.push({
+        id: uid(),
+        title,
+        when: when.toISOString(),
+        notes,
+        notified: false,
+        profileId: state.currentProfileId
+      });
+      state.reminders.sort((a, b) => new Date(a.when) - new Date(b.when));
+      save();
+      document.getElementById('rem-title').value = '';
+      document.getElementById('rem-notes').value = '';
+      renderReminders();
+      toast('Reminder added');
+    }
+
+    function deleteReminder(id) {
+      state.reminders = state.reminders.filter(r => r.id !== id);
+      save();
+      renderReminders();
+      toast('Reminder removed');
+    }
+
+    function renderReminders() {
+      const el = document.getElementById('reminder-list');
+      const now = Date.now();
+      // Show reminders for current profile + global ones without profileId
+      const list = state.reminders.filter(r => !r.profileId || r.profileId === state.currentProfileId);
+      if (!list.length) {
+        el.innerHTML = `<div class="empty"><div class="big">⏰</div>No reminders yet.</div>`;
+        return;
+      }
+      el.innerHTML = list.map(r => {
+        const due = new Date(r.when);
+        const past = due.getTime() < now;
+        return `
+          <div class="reminder-item">
+            <div class="reminder-info">
+              <div class="reminder-title">${escapeHtml(r.title)}${past ? ' <span class="badge">due</span>' : ''}</div>
+              <div class="reminder-when">${formatDT(r.when)}${r.notes ? ' · ' + escapeHtml(r.notes) : ''}</div>
+            </div>
+            <button class="btn btn-sm btn-danger" onclick="deleteReminder('${r.id}')">✕</button>
+          </div>`;
+      }).join('');
+    }
+
+    function updateNotifBanner() {
+      const banner = document.getElementById('notif-banner');
+      if ('Notification' in window && Notification.permission === 'granted') {
+        banner.classList.remove('show');
+      } else {
+        banner.classList.add('show');
+      }
+    }
+
+    function requestNotifPermission() {
+      if (!('Notification' in window)) {
+        toast('Notifications not supported');
+        return;
+      }
+      Notification.requestPermission().then(p => {
+        updateNotifBanner();
+        toast(p === 'granted' ? 'Notifications enabled' : 'Permission denied');
+      });
+    }
+
+    function checkReminders() {
+      if (!('Notification' in window) || Notification.permission !== 'granted') return;
+      const now = Date.now();
+      let changed = false;
+      state.reminders.forEach(r => {
+        if (!r.notified && new Date(r.when).getTime() <= now) {
+          new Notification('Reminder', {
+            body: r.title + (r.notes ? '\n' + r.notes : ''),
+            icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">⏰</text></svg>'
+          });
+          r.notified = true;
+          changed = true;
+        }
+      });
+      if (changed) { save(); renderReminders(); }
+    }
+
+    // ---------- Growth ----------
+    function addGrowth() {
+      const dt = document.getElementById('growth-dt').value;
+      if (!dt) { toast('Set a date'); return; }
+      const weight = parseFloat(document.getElementById('growth-weight').value) || null;
+      const height = parseFloat(document.getElementById('growth-height').value) || null;
+      const head = parseFloat(document.getElementById('growth-head').value) || null;
+      const notes = document.getElementById('growth-notes').value.trim();
+      if (weight === null && height === null && head === null) {
+        toast('Enter at least one measurement');
+        return;
+      }
+      state.growth.push({
+        id: uid(),
+        profileId: state.currentProfileId,
+        dt: new Date(dt).toISOString(),
+        weight, height, head, notes
+      });
+      state.growth.sort((a, b) => new Date(b.dt) - new Date(a.dt));
+      save();
+      document.getElementById('growth-weight').value = '';
+      document.getElementById('growth-height').value = '';
+      document.getElementById('growth-head').value = '';
+      document.getElementById('growth-notes').value = '';
+      document.getElementById('growth-dt').value = nowLocalISO();
+      renderGrowth();
+      toast('Measurement saved');
+    }
+
+    function deleteGrowth(id) {
+      if (!confirm('Delete this measurement?')) return;
+      state.growth = state.growth.filter(g => g.id !== id);
+      save();
+      renderGrowth();
+      toast('Deleted');
+    }
+
+    function renderGrowth() {
+      const el = document.getElementById('growth-list');
+      const list = state.growth.filter(g => g.profileId === state.currentProfileId);
+      if (!list.length) {
+        el.innerHTML = `<div class="empty"><div class="big">📏</div>No measurements yet.</div>`;
+        return;
+      }
+      el.innerHTML = `
+        <table class="growth-table">
+          <thead><tr><th>Date</th><th>Weight</th><th>Height</th><th>Head</th><th></th></tr></thead>
+          <tbody>
+            ${list.map(g => `
+              <tr>
+                <td>${formatDT(g.dt)}</td>
+                <td>${g.weight != null ? g.weight + ' kg' : '—'}</td>
+                <td>${g.height != null ? g.height + ' cm' : '—'}</td>
+                <td>${g.head != null ? g.head + ' cm' : '—'}</td>
+                <td><button class="btn btn-sm btn-danger" onclick="deleteGrowth('${g.id}')">✕</button></td>
+              </tr>
+              ${g.notes ? `<tr><td colspan="5" style="font-size:0.8rem;color:var(--muted);padding-top:0">${escapeHtml(g.notes)}</td></tr>` : ''}
+            `).join('')}
+          </tbody>
+        </table>`;
+    }
+
+    // ---------- Setup: Profiles ----------
+    function renderProfiles() {
+      const el = document.getElementById('profile-list');
+      el.innerHTML = state.profiles.map(p => `
+        <div class="profile-item">
+          <div class="profile-info">
+            <div class="profile-title">${p.icon} ${escapeHtml(p.name)}</div>
+            <div class="type-meta">${p.types.length} buttons${p.showGrowth ? ' · Growth enabled' : ''}</div>
+          </div>
+          ${p.id !== state.currentProfileId ? `<button class="btn btn-sm btn-outline" onclick="switchProfile('${p.id}')">Switch</button>` : '<span class="badge">active</span>'}
+          ${state.profiles.length > 1 ? `<button class="btn btn-sm btn-danger" onclick="deleteProfile('${p.id}')">✕</button>` : ''}
+        </div>
+      `).join('');
+    }
+
+    function openProfileModal() {
+      document.getElementById('profile-name').value = '';
+      document.getElementById('profile-icon').value = '📌';
+      document.getElementById('profile-growth').checked = false;
+      document.getElementById('modal-profile').classList.add('open');
+    }
+
+    function saveProfile() {
+      const name = document.getElementById('profile-name').value.trim();
+      if (!name) { toast('Enter a name'); return; }
+      let icon = document.getElementById('profile-icon').value.trim() || '📌';
+      const showGrowth = document.getElementById('profile-growth').checked;
+      const id = 'p_' + uid();
+      state.profiles.push({
+        id,
+        name,
+        icon,
+        showGrowth,
+        types: [{ id: 'other', label: 'Other', icon: '📌' }]
+      });
+      state.currentProfileId = id;
+      save();
+      closeModal('profile');
+      applyProfileUI();
+      renderAll();
+      showTab('setup');
+      toast('Profile created');
+    }
+
+    function deleteProfile(id) {
+      if (state.profiles.length <= 1) { toast('Need at least one profile'); return; }
+      if (!confirm('Delete this profile and all its events?')) return;
+      state.profiles = state.profiles.filter(p => p.id !== id);
+      state.events = state.events.filter(e => e.profileId !== id);
+      state.growth = state.growth.filter(g => g.profileId !== id);
+      state.reminders = state.reminders.filter(r => r.profileId !== id);
+      if (state.currentProfileId === id) {
+        state.currentProfileId = state.profiles[0].id;
+      }
+      save();
+      applyProfileUI();
+      renderAll();
+      renderProfiles();
+      toast('Profile deleted');
+    }
+
+    // ---------- Setup: Custom types ----------
+    function renderTypes() {
+      const p = currentProfile();
+      const el = document.getElementById('type-list');
+      if (!p.types.length) {
+        el.innerHTML = `<div class="empty">No buttons. Add one below.</div>`;
+        return;
+      }
+      el.innerHTML = p.types.map(t => `
+        <div class="type-item">
+          <div class="type-info">
+            <div class="type-title">${t.icon} ${escapeHtml(t.label)}</div>
+          </div>
+          <button class="btn btn-sm btn-outline" onclick="editType('${t.id}')">Edit</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteType('${t.id}')">✕</button>
+        </div>
+      `).join('');
+    }
+
+    function openTypeModal(type = null) {
+      editingTypeId = type ? type.id : null;
+      document.getElementById('modal-type-title').textContent = type ? 'Edit button' : 'Add quick button';
+      document.getElementById('type-name').value = type ? type.label : '';
+      document.getElementById('type-icon').value = type ? type.icon : '📌';
+      // Populate category dropdown
+      const catSel = document.getElementById('icon-category');
+      const cats = Object.keys(ICON_CATEGORIES);
+      catSel.innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join('');
+      // Try to pick a sensible default category
+      let defaultCat = cats[0];
+      if (type && type.icon) {
+        for (const c of cats) {
+          if (ICON_CATEGORIES[c].includes(type.icon)) { defaultCat = c; break; }
+        }
+      }
+      catSel.value = defaultCat;
+      buildIconPicker(type ? type.icon : '📌');
+      document.getElementById('modal-type').classList.add('open');
+    }
+
+    function editType(id) {
+      const t = currentProfile().types.find(x => x.id === id);
+      if (t) openTypeModal(t);
+    }
+
+    function buildIconPicker(selected) {
+      const cat = document.getElementById('icon-category').value || Object.keys(ICON_CATEGORIES)[0];
+      const icons = ICON_CATEGORIES[cat] || [];
+      const el = document.getElementById('icon-picker');
+      // Filter out any non-emoji junk that may have slipped in
+      const clean = icons.filter(ic => ic && ic.length <= 8 && !/^[a-z_]+$/i.test(ic));
+      el.innerHTML = clean.map(ic =>
+        `<button type="button" class="${ic === selected ? 'selected' : ''}" onclick="pickIcon('${ic}')">${ic}</button>`
+      ).join('');
+    }
+
+    function pickIcon(ic) {
+      document.getElementById('type-icon').value = ic;
+      buildIconPicker(ic);
+    }
+
+    function saveType() {
+      const label = document.getElementById('type-name').value.trim();
+      if (!label) { toast('Enter a name'); return; }
+      let icon = document.getElementById('type-icon').value.trim() || '📌';
+      const p = currentProfile();
+
+      if (editingTypeId) {
+        const t = p.types.find(x => x.id === editingTypeId);
+        if (t) { t.label = label; t.icon = icon; }
+      } else {
+        p.types.push({ id: 't_' + uid(), label, icon });
+      }
+      save();
+      closeModal('type');
+      buildQuickButtons();
+      renderTypes();
+      renderProfiles();
+      renderTodaySummary();
+      toast(editingTypeId ? 'Button updated' : 'Button added');
+    }
+
+    function deleteType(id) {
+      const p = currentProfile();
+      if (p.types.length <= 1) { toast('Keep at least one button'); return; }
+      if (!confirm('Remove this quick button? Existing log entries will keep their label.')) return;
+      p.types = p.types.filter(t => t.id !== id);
+      save();
+      renderProfiles();
+      buildQuickButtons();
+      renderTypes();
+      renderTodaySummary();
+      toast('Button removed');
+    }
+
+    // ---------- Backup ----------
+    function exportData() {
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `activity-tracker-backup-${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast('Backup downloaded');
+    }
+
+    function importData(ev) {
+      const file = ev.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (!data.profiles || !Array.isArray(data.profiles)) throw new Error('Invalid');
+          if (!confirm('This will replace all current data. Continue?')) return;
+          state = {
+            profiles: data.profiles,
+            currentProfileId: data.currentProfileId || data.profiles[0].id,
+            events: data.events || [],
+            reminders: data.reminders || [],
+            growth: data.growth || []
+          };
+          save();
+          applyProfileUI();
+          renderAll();
+          toast('Import successful');
+        } catch (err) {
+          toast('Invalid backup file');
+        }
+        ev.target.value = '';
+      };
+      reader.readAsText(file);
+    }
+
+    function clearAllData() {
+      if (!confirm('Delete ALL data across every profile? This cannot be undone.')) return;
+      if (!confirm('Really sure? Export a backup first if you need the data.')) return;
+      state = {
+        profiles: JSON.parse(JSON.stringify(DEFAULT_PROFILES)),
+        currentProfileId: 'baby',
+        events: [],
+        reminders: [],
+        growth: []
+      };
+      save();
+      applyProfileUI();
+      renderAll();
+      toast('All data cleared');
+    }
+
+    function renderAll() {
+      buildQuickButtons();
+      renderRecent();
+      renderTodaySummary();
+      renderHistory();
+      renderReminders();
+      renderGrowth();
+      renderProfiles();
+      renderTypes();
+    }
+
+    // ---------- Init ----------
+    load();
+    applyProfileUI();
+    document.getElementById('growth-dt').value = nowLocalISO();
+    renderAll();
+    updateNotifBanner();
+    setInterval(checkReminders, 30000);
+    checkReminders();
+
+    // Close modals on overlay click
+    ['event','type','profile'].forEach(name => {
+      document.getElementById('modal-' + name).addEventListener('click', e => {
+        if (e.target.id === 'modal-' + name) closeModal(name);
+      });
+    });
+  </script>
+</body>
+</html>
